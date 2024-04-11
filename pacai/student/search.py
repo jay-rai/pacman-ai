@@ -142,4 +142,41 @@ def aStarSearch(problem, heuristic):
     """
 
     # *** Your Code Here ***
+
+    #okay given that this is an A* search we need to list (closed, open) in order to keep tracks of evaluated nodes and nodes to explore
+    #given that we can make our fronteir our open list that keeps tracks of nodes to explore and evaluated states as the closed list
+    frontier = PriorityQueue()
+    eval_states = set()
+
+    #okay so within the frontier we need init with the ((starting state, path to state, cost) hueristic estimate)
+    frontier.push((problem.startingState(), [], 0), heuristic(problem.startingState(), problem))
+
+    while not frontier.isEmpty():
+        #lets keep trakc of the state, path to state, and cost
+        current_state, path, cost = frontier.pop()
+
+        #as per normal if goal yeet
+        if problem.isGoal(current_state):
+            print(f'The final path to win was: {path}')
+            return path
+        
+        if current_state in eval_states:
+            continue
+        
+        eval_states.add(current_state)
+
+        for successor, action, step_cost in problem. successorStates(current_state):
+            #where cost is cost and let h be hueristic, given that the f(n) = h(n) + cost(n)
+            #get the cost of current state and the step cost to the neighbor, as well as the huersitic value of the measurement and add them
+            successor_cost = cost + step_cost
+            successor_h = heuristic(successor, problem)
+            successor_eval = successor_cost + successor_h
+
+            #if a successor, or neighboring state has a cheaper cost, or has not been discovered yet push that into our PQ
+            if not any(successor == eval_states for eval_state in eval_states):
+                frontier.push((successor, path + [action], successor_cost), successor_eval)
+    return []
+
+            
+
     raise NotImplementedError()
