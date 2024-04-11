@@ -165,7 +165,7 @@ def aStarSearch(problem, heuristic):
         
         eval_states.add(current_state)
 
-        for successor, action, step_cost in problem. successorStates(current_state):
+        for successor, action, step_cost in problem.successorStates(current_state):
             #where cost is cost and let h be hueristic, given that the f(n) = h(n) + cost(n)
             #get the cost of current state and the step cost to the neighbor, as well as the huersitic value of the measurement and add them
             successor_cost = cost + step_cost
