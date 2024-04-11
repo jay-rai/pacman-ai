@@ -4,6 +4,7 @@ In this file, you will implement generic search algorithms which are called by P
 
 from pacai.util.stack import Stack
 from pacai.util.queue import Queue
+from pacai.util.priorityQueue import PriorityQueue
 
 def depthFirstSearch(problem):
     """
@@ -92,12 +93,6 @@ def breadthFirstSearch(problem):
     return []
 
 
-
-
-
-
-    raise NotImplementedError()
-
 def uniformCostSearch(problem):
     """
     Search the node of least total cost first.
@@ -105,8 +100,39 @@ def uniformCostSearch(problem):
 
     # *** Your Code Here ***
     
+    #Okay now we know that our frontier is going to act as a Priority Queue in which we keep track of cost
+    frontier = PriorityQueue()
+    #here we just are tracking the lowest cost to a state visited
+    visited_states = {}
 
-    raise NotImplementedError()
+    #initialize the frontier
+    frontier.push((problem.startingState(), []), 0)
+
+    while not frontier.isEmpty():
+        #get the latest state and path
+        current_state, path = frontier.pop()
+
+        #are we at the finish line yeet
+        if problem.isGoal(current_state):
+            print(f'The best path found was: {path}')
+            return path
+        
+        #get our current cost of getting here
+        current_cost = problem.actionsCost(path)
+        #if the current state we are in is in visited states and it cost less that our current cost value keep going
+        if current_state in visited_states and visited_states[current_state] <= current_cost:
+            continue
+
+        visited_states[current_state] = current_cost
+        
+        for successor, action, stepCost in problem.successorStates(current_state):
+            new_path = path + [action]
+            new_cost = problem.actionsCost(new_path)
+            if successor not in visited_states or new_cost < visited_states[successor]:
+                frontier.push((successor, new_path), new_cost)
+    #if none of this works or we somehow break or loop i guess idk 
+    return []
+
 
 def aStarSearch(problem, heuristic):
     """
