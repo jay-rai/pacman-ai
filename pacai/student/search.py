@@ -88,7 +88,7 @@ def breadthFirstSearch(problem):
         for successor, action, _ in problem.successorStates(current_state):
             if successor not in visited_states:
                 frontier.push((successor, path + [action]))
-    #if we break out of this loop we dumb or not sovleable i guess idk
+    #if we break out of this loop we dumb or unsovleable i guess idk
     return []
 
 
@@ -104,6 +104,8 @@ def uniformCostSearch(problem):
     """
 
     # *** Your Code Here ***
+    
+
     raise NotImplementedError()
 
 def aStarSearch(problem, heuristic):
