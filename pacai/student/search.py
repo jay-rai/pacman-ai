@@ -119,15 +119,17 @@ def uniformCostSearch(problem):
         
         #get our current cost of getting here
         current_cost = problem.actionsCost(path)
-        #if the current state we are in is in visited states and it cost less that our current cost value keep going
+        #if a state visited with cost less or equal to current cost no need to explroe again cause we foudn better path haha 
         if current_state in visited_states and visited_states[current_state] <= current_cost:
             continue
-
-        visited_states[current_state] = current_cost
         
-        for successor, action, stepCost in problem.successorStates(current_state):
+        visited_states[current_state] = current_cost
+
+        #for all the successor states, or neighboring states, around our current state
+        for successor, action, step_cost in problem.successorStates(current_state):
             new_path = path + [action]
             new_cost = problem.actionsCost(new_path)
+            #if state not in visited states or better cost then we need to add it to our frontier
             if successor not in visited_states or new_cost < visited_states[successor]:
                 frontier.push((successor, new_path), new_cost)
     #if none of this works or we somehow break or loop i guess idk 
