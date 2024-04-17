@@ -14,7 +14,7 @@ from pacai.core.search.problem import SearchProblem
 from pacai.agents.base import BaseAgent
 from pacai.agents.search.base import SearchAgent
 from pacai.core.directions import Directions
-from pacai.core.search.heuristic import manhattan
+from pacai.core.search import heuristic
 
 class CornersProblem(SearchProblem):
     """
@@ -61,12 +61,12 @@ class CornersProblem(SearchProblem):
         right = self.walls.getWidth() - 2
 
         self.corners = ((1, 1), (1, top), (right, 1), (right, top))
-        self.cornerIndices = {self.corners[i]: i for i in range(4)}
         for corner in self.corners:
             if not startingGameState.hasFood(*corner):
                 logging.warning('Warning: no food in corner ' + str(corner))
 
         # *** Your Code Here ***
+        self.nodes_visited = 0;
         #raise NotImplementedError()
 
     def actionsCost(self, actions):
@@ -91,9 +91,14 @@ class CornersProblem(SearchProblem):
     #Given to us by the comments we are told we need to implment the startingState for the corners problem
     def startingState(self):
         #we can set a starting position for our true position and whether we have touched each corner
-        #startingPos = (self.startingPosition, (False, False, False, False))
-        starting_position = (self.startingPosition, (self.startingPosition == self.corners[0], self.startingPosition == self.corners[1],
-                                                     self.startingPosition == self.corners[2], self.startingPosition == self.corners[3]))
+        #startingPos = (self.startingPosition, (False, False, False, False)) DOESNT WORK IF PAC MAN STARTS AT A CORNER
+        #since he can potentially start a corner we need to set the booleans according to whether the starting position is at that corner which will default false if not true
+        starting_position = (self.startingPosition, (
+            self.startingPosition == self.corners[0], 
+            self.startingPosition == self.corners[1],
+            self.startingPosition == self.corners[2], 
+            self.startingPosition == self.corners[3]
+            ))
         return starting_position
     
     #We also need to define our successor states with some given code
@@ -107,11 +112,15 @@ class CornersProblem(SearchProblem):
             nextx, nexty = int(x + dx), int(y+dy)
             #if the nextx and next y is not a wall
             if not self.walls[nextx][nexty]:
-                #put them in the visited list
-                next_visited = list(visited)
-                if (nextx, nexty) in self.cornerIndices:
-                    next_visited[self.cornerIndices[(nextx,nexty)]] = True
-                successors.append(((nextx, nexty), tuple(next_visited), action, 1))
+                #append the new state with position and updated status of corners
+                successors.append((
+                    ((nextx,nexty),(
+                    ((nextx, nexty) == self.corners[0]) or state[1][0],
+                    ((nextx, nexty) == self.corners[1]) or state[1][1],
+                    ((nextx, nexty) == self.corners[2]) or state[1][2],
+                    ((nextx, nexty) == self.corners[3]) or state[1][3])), 
+                    action, 1))
+        self.nodes_visited += 1
         return successors
 
     #We also need to define our completed goal state, so all true values from our original startingState def
@@ -135,12 +144,16 @@ def cornersHeuristic(state, problem):
     # walls = problem.walls  # These are the walls of the maze, as a Grid.
 
     # *** Your Code Here ***
-    position, visited = state
-    unvisited = [problem.corners[i] for i in range(4) if not visited[i]]
-    if not unvisited:
-        return 0
-    return min(manhattan(position, corner) for corner in unvisited)
-    return heuristic.null(state, problem)  # Default to trivial solution
+    #lets try to do the manhattan distance but the stupid pacai core search one not working
+
+    corners = problem.corners
+    manh_dist = [0,0,0,0]
+    for corner in range(4):
+        manh_dist[corner] = ( abs(state[0][0] - corners[corner][0]) + abs(state[0][1] - corners[corner][1])) * (not state[1][corner])
+    manh_dist.sort()
+    return manh_dist[3]
+    #return min(manhattan(position, corner) for corner in unvisited)
+    # return heuristic.null(state, problem)  # Default to trivial solution
 
 def foodHeuristic(state, problem):
     """
@@ -172,9 +185,19 @@ def foodHeuristic(state, problem):
     """
 
     position, foodGrid = state
+    foodList = foodGrid.asList()
+    #if no food in the foodList then pacboi ate all the nom noms
+    if not foodList:
+        return 0
+    #max distance 
+    max_distance = max(heuristic.distance.manhattan(position, food) for food in foodList)
+    #add numFood to huersitic to encourage more exploration and account for remaining food
+    numfood_h = len(foodList)
+    heuristic_value = max_distance + numfood_h    
+    return heuristic_value
 
     # *** Your Code Here ***
-    return heuristic.null(state, problem)  # Default to the null heuristic.
+
 
 class ClosestDotSearchAgent(SearchAgent):
     """
