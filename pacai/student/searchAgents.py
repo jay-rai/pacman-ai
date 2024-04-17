@@ -206,6 +206,7 @@ class ClosestDotSearchAgent(SearchAgent):
 
     def __init__(self, index, **kwargs):
         super().__init__(index, **kwargs)
+        
 
     def registerInitialState(self, state):
         self._actions = []
@@ -236,10 +237,13 @@ class ClosestDotSearchAgent(SearchAgent):
         # startPosition = gameState.getPacmanPosition()
         # food = gameState.getFood()
         # walls = gameState.getWalls()
-        # problem = AnyFoodSearchProblem(gameState)
+        problem = AnyFoodSearchProblem(gameState)
 
         # *** Your Code Here ***
-        raise NotImplementedError()
+        from pacai.student.search import breadthFirstSearch
+        path = breadthFirstSearch(problem)
+        
+        return path
 
 class AnyFoodSearchProblem(PositionSearchProblem):
     """
@@ -267,6 +271,9 @@ class AnyFoodSearchProblem(PositionSearchProblem):
 
         # Store the food for later reference.
         self.food = gameState.getFood()
+
+    def isGoal(self, state):
+        return self.food[state[0]][state[1]]
 
 class ApproximateSearchAgent(BaseAgent):
     """
