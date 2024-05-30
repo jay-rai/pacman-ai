@@ -66,7 +66,7 @@ class ReflexAgent(BaseAgent):
         foodDist = [distance.manhattan(newPosition, food) for food in newFood.asList()]
         if foodDist:
             minFoodDist = min(foodDist)
-            recip = 1/minFoodDist
+            recip = 1 / minFoodDist
         else:
             #avoid /0
             recip = 0
@@ -206,7 +206,63 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
     def __init__(self, index, **kwargs):
         super().__init__(index, **kwargs)
 
-    #code didnt work dont push
+    def getAction(self, state):
+        """
+        Returns the minimax action from the current gameState.
+        """
+        legalActions = state.getLegalActions(0)
+        bestAction = Directions.STOP
+        bestScore = float("-inf")
+        alpha = float("-inf")
+        beta = float("inf")
+
+        # Check all legal actions in algorithm and compare
+        for action in legalActions:
+            if action != Directions.STOP:
+                successor = state.generateSuccessor(0, action)
+                score = self.minValue(successor, 1, alpha, beta)
+
+                if score > bestScore:
+                    bestScore = score
+                    bestAction = action
+
+                alpha = max(alpha, bestScore)
+
+        return bestAction
+
+    def maxValue(self, state, depth, alpha, beta):
+        """
+        Pacmans turn
+        """
+        if depth == self.getTreeDepth() or state.isWin() or state.isLose():
+            return self.getEvaluationFunction()(state)
+        value = float("-inf")
+        legalActions = state.getLegalActions(0)
+        for action in legalActions:
+            if action != Directions.STOP:
+                successor = state.generateSuccessor(0, action)
+                value = max(value, self.minValue(successor, depth + 1, alpha, beta))
+                if value >= beta:
+                    return value
+
+                alpha = max(alpha, value)
+        return value
+
+    def minValue(self, state, depth, alpha, beta):
+        if depth == self.getTreeDepth() or state.isWin() or state.isLose():
+            return self.getEvaluationFunction()(state)
+        value = float("inf")
+        numAgents = state.getNumAgents()
+        for agentIndex in range(1, numAgents):
+            legalActions = state.getLegalActions(agentIndex)
+            for action in legalActions:
+                if action != Directions.STOP:
+                    successor = state.generateSuccessor(agentIndex, action)
+                    value = min(value, self.maxValue(successor, depth, alpha, beta))
+                    if value <= alpha:
+                        return value
+                    beta = min(beta, value)
+        return value
 
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
@@ -225,6 +281,43 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
 
     def __init__(self, index, **kwargs):
         super().__init__(index, **kwargs)
+    
+    def getAction(self, gameState):
+        """
+        Returns the expectimax action from the current gameState.
+        """
+        def max_agent(state, depthLevel):
+            # Base condition check
+            if state.isWin() or state.isLose() or depthLevel == self.getTreeDepth():
+                return self.getEvaluationFunction()(state)
+
+            topScore = float("-inf")
+            optimalMove = Directions.STOP
+
+            # Evaluate possible moves for Pacman
+            for move in state.getLegalActions(0):
+                next_state = state.generateSuccessor(0, move)
+                evaluation = expectedValue(next_state, depthLevel, 1)
+                if evaluation > topScore:
+                    topScore = evaluation
+                    optimalMove = move
+
+            # Return the optimal move at root or the best score found at other depths
+            return optimalMove if depthLevel == 0 else topScore
+
+        def expectedValue(state, depth, agent):
+            if state.isWin() or state.isLose() or depth == self.getTreeDepth():
+                return self.getEvaluationFunction()(state)
+            actions = state.getLegalActions(agent)
+            total_score = 0
+            for action in actions:
+                successor = state.generateSuccessor(agent, action)
+                if agent == state.getNumAgents() - 1:
+                    total_score += max_agent(successor, depth + 1)
+                else:
+                    total_score += expectedValue(successor, depth, agent + 1)
+            return total_score / len(actions)
+        return max_agent(gameState, 0)
     
 def betterEvaluationFunction(currentGameState):
     """

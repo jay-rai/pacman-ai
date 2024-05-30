@@ -37,14 +37,22 @@ class ReinforcementAgent(ValueEstimationAgent):
         self.epsilon = float(epsilon)
         self.alpha = float(alpha)
         self.discountRate = float(gamma)
+        self.qValues = {}
 
     @abc.abstractmethod
     def update(self, state, action, nextState, reward):
         """
         This class will call this function after observing a transition and reward.
         """
+        currentQValue = self.getQValue(state, action)
 
-        pass
+        nextValue = self.getValue(nextState)
+
+        correction = reward + self.getDiscountRate() * nextValue - currentQValue
+
+        newQValue = currentQValue + self.getAlpha() * correction
+
+        self.qValues[(state, action)] = newQValue
 
     def getAlpha(self):
         return self.alpha

@@ -1,6 +1,9 @@
 import random
-
+from collections import Counter
 from pacai.agents.capture.capture import CaptureAgent
+from pacai.core.distanceCalculator import Distancer
+from pacai.util import util
+from pacai.core.directions import Directions
 
 class DummyAgent(CaptureAgent):
     """
@@ -22,6 +25,9 @@ class DummyAgent(CaptureAgent):
         super().registerInitialState(gameState)
 
         # Your initialization code goes here, if you need any.
+        self.start = gameState.getAgentState(self.index).getPosition()
+        self.distancer = Distancer(gameState.getInitialLayout())
+        self.distancer.getMazeDistances()
 
     def chooseAction(self, gameState):
         """
